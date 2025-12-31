@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Modal, Button, Form, Nav, Tab, Stack, Alert, Spinner, Badge, ProgressBar } from "react-bootstrap";
+import { Modal, Button, Form, Nav, Tab, Stack, Alert, Spinner, Badge } from "react-bootstrap";
 import { useTheme } from "./ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 import { settingsAPI, uploadAPI, shareAPI, notesAPI } from "../services/api";

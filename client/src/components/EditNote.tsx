@@ -18,7 +18,7 @@ export function EditNote({ onSubmit, onAddTag, availableTags }: EditNoteProps) {
         title={note.title}
         markdown={note.markdown}
         tags={note.tags}
-        onSubmit={data => onSubmit(note.id, data)}
+        onSubmit={data => onSubmit(note.id || '', data)}
         onAddTag={onAddTag}
         availableTags={availableTags}
       />

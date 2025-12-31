@@ -1,0 +1,46 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/archiver": "^6.0.4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node-fetch": "^2.6.12",
+    "@types/pdfkit": "^0.13.9",
+    "archiver": "^7.0.1",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.8.0",
+    "convertapi": "^1.15.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.0",
+    "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^2.2.1",
+    "node-fetch": "^3.3.2",
+    "pdfkit": "^0.16.0",
+    "playwright": "^1.54.1",
+    "socket.io": "^4.8.3",
+    "ts-node": "^10.9.2",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^1.4.11",
+    "typescript": "^5.3.3"
+  }
+}

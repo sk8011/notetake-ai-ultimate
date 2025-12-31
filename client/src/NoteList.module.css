@@ -1,0 +1,82 @@
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(135deg, #6366f1 0%, #22d3ee 100%);
+  transform: scaleX(0);
+  transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover,
+.card:focus {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+  border-color: #6366f1;
+}
+
+.card:hover::before,
+.card:focus::before {
+  transform: scaleX(1);
+}
+
+/* Shared note card styling */
+.sharedCard {
+  border-color: #0dcaf0;
+  background: linear-gradient(135deg, var(--card-bg) 0%, rgba(13, 202, 240, 0.05) 100%);
+}
+
+.sharedCard::before {
+  background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%);
+}
+
+.sharedCard:hover,
+.sharedCard:focus {
+  border-color: #0dcaf0;
+}
+
+/* Selection mode styles */
+.selectableCard {
+  cursor: pointer;
+}
+
+.selectableCard:hover {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.selectedCard {
+  border-color: #6366f1 !important;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(129, 140, 248, 0.05) 100%) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+.selectedCard::before {
+  transform: scaleX(1) !important;
+}
+
+.selectCheckbox {
+  z-index: 10;
+}
+
+.selectCheckbox .form-check-input {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.selectCheckbox .form-check-input:checked {
+  background-color: #6366f1;
+  border-color: #6366f1;
+}

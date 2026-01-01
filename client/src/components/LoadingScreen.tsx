@@ -11,6 +11,35 @@ export const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
   const [messageIndex, setMessageIndex] = useState(0);
   const [phase, setPhase] = useState<"typing" | "dots" | "done">("typing");
 
+  // Function to play welcome sound
+  const playWelcomeSound = () => {
+    try {
+      const audio = new Audio("/windows-xp-startup.mp3");
+      audio.volume = 0.4;
+      audio.play().catch(() => {
+        // Fallback to simple chime if autoplay is blocked
+        try {
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          oscillator.frequency.value = 523.25;
+          oscillator.type = "sine";
+          gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+          gainNode.gain.linearRampToValueAtTime(0.25, audioContext.currentTime + 0.02);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + 0.45);
+        } catch (err) {
+          console.log("Fallback sound failed:", err);
+        }
+      });
+    } catch (error) {
+      console.log("Could not play welcome sound:", error);
+    }
+  };
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -49,7 +78,10 @@ export const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
             }, 500);
           } else {
             setPhase("done");
-            setTimeout(onComplete, 800);
+            setTimeout(() => {
+              playWelcomeSound();
+              onComplete();
+            }, 800);
           }
         }
       }, 500);

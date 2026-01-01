@@ -140,10 +140,23 @@ app.post("/api/chat", authenticate, async (req, res) => {
     ? notes.map((note) => `- ${note.title}: ${note.markdown}`).join("\n")
     : "No notes provided.";
 
-  // Extract the latest user message
-  const latestUserMessage = messages[messages.length - 1]?.content || "";
+  // Build conversation messages with context
+  const conversationMessages = [
+    {
+      role: "system",
+      content: `You are an AI assistant built into a note-taking app. Use the user's notes along with your general knowledge to answer questions clearly and helpfully. Keep your responses short and focused unless the user specifically asks for more detail—in that case, provide a slightly more in-depth explanation. If the user asks who created you, you can say you were made by Narendra Meloni.
 
-  const userPrompt = `The user has the following notes:\n${notesText}\n\nBased on the notes, answer the following question:\n"${latestUserMessage}"`;
+The user has the following notes:
+${notesText}
+
+Use these notes to provide relevant answers when asked about their content.`,
+    },
+    // Include all previous messages for context
+    ...messages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }))
+  ];
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -154,16 +167,7 @@ app.post("/api/chat", authenticate, async (req, res) => {
       },
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",
-        messages: [
-          {
-            role: "system",
-            content: "You are an AI assistant built into a note-taking app. Use the user's notes along with your general knowledge to answer questions clearly and helpfully. Keep your responses short and focused unless the user specifically asks for more detail—in that case, provide a slightly more in-depth explanation. If the user asks who created you, you can say you were made by Narendra Meloni.",
-          },
-          {
-            role: "user",
-            content: userPrompt,
-          },
-        ],
+        messages: conversationMessages,
       }),
     });
 

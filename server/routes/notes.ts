@@ -19,11 +19,10 @@ router.get("/", async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Export all notes as ZIP of PDFs (must be before /:id route)
+// Export all notes as ZIP of Markdown files (must be before /:id route)
 router.get("/export-all", async (req: AuthRequest, res: Response) => {
   try {
     const archiver = require("archiver");
-    const PDFDocument = require("pdfkit");
     
     const notes = await Note.find({ userId: req.userId });
     
@@ -40,102 +39,6 @@ router.get("/export-all", async (req: AuthRequest, res: Response) => {
 
     // Track filename occurrences to handle duplicates
     const fileNameCounts: Record<string, number> = {};
-
-    // Helper function to render markdown to PDF
-    const renderMarkdownToPdf = (doc: any, markdown: string) => {
-      const lines = markdown.split("\n");
-      
-      for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
-        
-        // Skip empty lines but add spacing
-        if (line.trim() === "") {
-          doc.moveDown(0.5);
-          continue;
-        }
-
-        // Headers
-        if (line.startsWith("### ")) {
-          doc.fontSize(14).font("Helvetica-Bold").fillColor("#333333")
-            .text(line.substring(4), { align: "left" });
-          doc.moveDown(0.3);
-          continue;
-        }
-        if (line.startsWith("## ")) {
-          doc.fontSize(16).font("Helvetica-Bold").fillColor("#222222")
-            .text(line.substring(3), { align: "left" });
-          doc.moveDown(0.3);
-          continue;
-        }
-        if (line.startsWith("# ")) {
-          doc.fontSize(18).font("Helvetica-Bold").fillColor("#111111")
-            .text(line.substring(2), { align: "left" });
-          doc.moveDown(0.3);
-          continue;
-        }
-
-        // Numbered lists (1. 2. 3. etc)
-        const numberedMatch = line.match(/^(\d+)\.\s+(.*)$/);
-        if (numberedMatch) {
-          doc.fontSize(12).font("Helvetica").fillColor("#000000")
-            .text(`${numberedMatch[1]}. ${numberedMatch[2]}`, { 
-              align: "left", 
-              indent: 20,
-              lineGap: 2
-            });
-          continue;
-        }
-
-        // Bullet points (- or *)
-        if (line.match(/^[\-\*]\s+/)) {
-          const bulletContent = line.replace(/^[\-\*]\s+/, "");
-          doc.fontSize(12).font("Helvetica").fillColor("#000000")
-            .text(`•  ${bulletContent}`, { 
-              align: "left", 
-              indent: 20,
-              lineGap: 2
-            });
-          continue;
-        }
-
-        // Code blocks (``` or indented)
-        if (line.startsWith("```")) {
-          // Skip the opening ```
-          i++;
-          let codeContent = [];
-          while (i < lines.length && !lines[i].startsWith("```")) {
-            codeContent.push(lines[i]);
-            i++;
-          }
-          if (codeContent.length > 0) {
-            doc.fontSize(10).font("Courier").fillColor("#6366f1")
-              .text(codeContent.join("\n"), { 
-                align: "left",
-                indent: 10,
-                lineGap: 2
-              });
-            doc.moveDown(0.5);
-          }
-          continue;
-        }
-
-        // Inline code - simple rendering
-        if (line.includes("`")) {
-          line = line.replace(/`([^`]+)`/g, "[$1]");
-        }
-
-        // Bold and italic - strip markers for plain text
-        line = line.replace(/\*\*\*([^*]+)\*\*\*/g, "$1"); // bold italic
-        line = line.replace(/\*\*([^*]+)\*\*/g, "$1"); // bold
-        line = line.replace(/\*([^*]+)\*/g, "$1"); // italic
-        line = line.replace(/__([^_]+)__/g, "$1"); // bold
-        line = line.replace(/_([^_]+)_/g, "$1"); // italic
-
-        // Regular paragraph
-        doc.fontSize(12).font("Helvetica").fillColor("#000000")
-          .text(line, { align: "left", lineGap: 2 });
-      }
-    };
 
     for (const note of notes) {
       // Sanitize filename - remove special characters
@@ -157,40 +60,8 @@ router.get("/export-all", async (req: AuthRequest, res: Response) => {
         fileNameCounts[sanitizedTitle] = 1;
       }
 
-      // Create PDF for this note
-      const doc = new PDFDocument({ margin: 50 });
-      const chunks: Buffer[] = [];
-
-      doc.on("data", (chunk: Buffer) => chunks.push(chunk));
-      
-      // Title
-      doc.fontSize(20).font("Helvetica-Bold").text(note.title, { align: "center" });
-      doc.moveDown();
-      
-      // Date
-      doc.fontSize(10).font("Helvetica").fillColor("#666666")
-        .text(`Created: ${new Date(note.createdAt).toLocaleDateString()}`, { align: "center" });
-      doc.moveDown(2);
-      
-      // Content - render markdown properly
-      renderMarkdownToPdf(doc, note.markdown);
-
-      // Tags at the bottom
-      if (note.tags && note.tags.length > 0) {
-        doc.moveDown(2);
-        doc.fontSize(10).fillColor("#6366f1")
-          .text(`Tags: ${note.tags.join(", ")}`, { align: "left" });
-      }
-
-      doc.end();
-
-      await new Promise<void>((resolve) => {
-        doc.on("end", () => {
-          const pdfBuffer = Buffer.concat(chunks);
-          archive.append(pdfBuffer, { name: `${sanitizedTitle}.pdf` });
-          resolve();
-        });
-      });
+      // Add markdown file to archive
+      archive.append(note.markdown, { name: `${sanitizedTitle}.md` });
     }
 
     await archive.finalize();

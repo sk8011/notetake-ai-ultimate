@@ -230,6 +230,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
         await messagesAPI.markAsRead(activeConversation._id);
         // Join socket room
         socket?.emit("conversation:join", activeConversation._id);
+        // Scroll to bottom after messages are loaded
+        setTimeout(() => scrollToBottom(), 100);
       } catch (error) {
         console.error("Error loading messages:", error);
       } finally {
@@ -365,7 +367,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
     // For personal chats, get the other participant
     if (activeConversation.type === "personal") {
       const otherUser = activeConversation.participants.find(
-        (p) => p._id !== currentUserId
+        (p) => p != null && p._id !== currentUserId
       );
       if (!otherUser) return;
 
@@ -480,7 +482,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
   const getFriendsNotInGroup = () => {
     if (!activeConversation) return [];
     const participantIds = activeConversation.participants.map(p => p._id);
-    return friends.filter(f => !participantIds.includes(f.user._id));
+    return friends.filter(f => f.user != null && !participantIds.includes(f.user._id));
   };
 
   // Check if current user is admin
@@ -489,7 +491,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
 
   // Get other participant in personal chat
   const getOtherParticipant = (conv: Conversation) => {
-    return conv.participants.find((p) => p._id !== currentUserId);
+    return conv.participants.find((p) => p != null && p._id !== currentUserId);
   };
 
   // Format time
@@ -518,8 +520,9 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
           {activeConversation ? (
             <Button
               variant="link"
-              className="back-btn p-0 me-2"
+              className="back-btn me-2"
               onClick={() => setActiveConversation(null)}
+              style={{ padding: "1rem" }}
             >
               <i className="bi bi-arrow-left"></i>
             </Button>
@@ -530,7 +533,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
               : getOtherParticipant(activeConversation)?.name
             : "Messages"}
         </h5>
-        <Button variant="link" className="close-btn" onClick={onClose}>
+        <Button variant="link" className="close-btn" style={{ padding: "1rem" }} onClick={onClose}>
           <i className="bi bi-x-lg"></i>
         </Button>
       </div>
@@ -579,7 +582,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
               </div>
             ) : (
               messages.map((msg) => {
-                const isSent = msg.sender._id === currentUserId;
+                const senderName = msg.sender ? msg.sender.name : "Deleted User";
+                const isSent = msg.sender ? msg.sender._id === currentUserId : false;
                 const isGroup = activeConversation.type === "group";
                 
                 return (
@@ -589,14 +593,14 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
                   >
                     {/* Show sender name only in groups for received messages */}
                     {!isSent && isGroup && (
-                      <div className="message-sender">{msg.sender.name}</div>
+                      <div className="message-sender">{senderName}</div>
                     )}
                     
                     <div className={!isSent && isGroup ? "message-with-avatar" : ""}>
                       {/* Show avatar only in group chats */}
                       {!isSent && isGroup && (
                         <div className="message-avatar">
-                          {msg.sender.name?.charAt(0).toUpperCase()}
+                          {senderName.charAt(0).toUpperCase()}
                         </div>
                       )}
                       <div className="message-bubble">
@@ -736,10 +740,10 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
               {/* Friends Tab */}
               <Tab.Pane eventKey="friends">
                 <div className="friends-list">
-                  {pendingReceived.length > 0 && (
+                  {pendingReceived.filter((req) => req.user != null).length > 0 && (
                     <div className="friends-section">
                       <div className="section-title">Friend Requests</div>
-                      {pendingReceived.map((req) => (
+                      {pendingReceived.filter((req) => req.user != null).map((req) => (
                         <div key={req.friendshipId} className="friend-item request">
                           <div className="friend-avatar">
                             {req.user.name.charAt(0).toUpperCase()}
@@ -769,10 +773,10 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
                     </div>
                   )}
 
-                  {pendingSent.length > 0 && (
+                  {pendingSent.filter((req) => req.user != null).length > 0 && (
                     <div className="friends-section">
                       <div className="section-title">Pending</div>
-                      {pendingSent.map((req) => (
+                      {pendingSent.filter((req) => req.user != null).map((req) => (
                         <div key={req.friendshipId} className="friend-item pending">
                           <div className="friend-avatar">
                             {req.user.name.charAt(0).toUpperCase()}
@@ -799,7 +803,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
                         No friends yet. Search for people to add!
                       </div>
                     ) : (
-                      friends.map((friend) => (
+                      friends.filter((friend) => friend.user != null).map((friend) => (
                         <div key={friend.friendshipId} className="friend-item">
                           <div className="friend-avatar">
                             {friend.user.name.charAt(0).toUpperCase()}
@@ -945,7 +949,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
           <Form.Group>
             <Form.Label>Select Members (max 20)</Form.Label>
             <div className="member-select-list">
-              {friends.map((friend) => (
+              {friends.filter((friend) => friend.user != null).map((friend) => (
                 <Form.Check
                   key={friend.user._id}
                   type="checkbox"
@@ -1058,10 +1062,10 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, notes }) => {
               {/* Members Section */}
               <div className="group-settings-section mt-4">
                 <h6 className="section-label">
-                  Members ({activeConversation.participants.length}/20)
+                  Members ({activeConversation.participants.filter(p => p != null).length}/20)
                 </h6>
                 <div className="members-list">
-                  {activeConversation.participants.map((member) => (
+                  {activeConversation.participants.filter((member) => member != null).map((member) => (
                     <div key={member._id} className="member-item">
                       <div className="member-avatar">
                         {member.name?.charAt(0).toUpperCase()}

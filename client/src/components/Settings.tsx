@@ -635,7 +635,7 @@ export function Settings({ show, onHide, onPreferencesChange, currentPreferences
                     Export Your Notes
                   </h6>
                   <p className="text-muted small mb-2">
-                    Download all your notes as a ZIP file containing PDFs before deleting your account.
+                    Download all your notes as a ZIP of markdown files before deleting your account.
                   </p>
                   <Button 
                     variant="outline-primary" 

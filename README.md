@@ -18,10 +18,10 @@ A full-stack markdown note-taking application with real-time chat, AI integratio
 ## Demo
 
 ### All Features (Notes, Chat, AI, Themes, etc.)
-[▶️ Watch Demo Video 1](./Demos/demo1.gif)
+https://github.com/user-attachments/assets/587bcded-44a2-4655-8938-5bcf1d5a77ce
 
 ### Note Sharing Feature
-[▶️ Watch Demo Video 2](./Demos/demo2.gif)
+https://github.com/user-attachments/assets/f8c40e83-e420-4d8e-a4c8-82c60c9331f2
 
 ## Tech Stack
 

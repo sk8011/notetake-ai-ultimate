@@ -15,6 +15,14 @@ A full-stack markdown note-taking application with real-time chat, AI integratio
 - Light and dark themes (along with default background image options + custom background image upload)
 - Responsive design - works flawlessly for both pc and mobiles.
 
+## Demo
+
+### All Features (Notes, Chat, AI, Themes, etc.)
+[▶️ Watch Demo Video 1](./Demos/demo1.gif)
+
+### Note Sharing Feature
+[▶️ Watch Demo Video 2](./Demos/demo2.gif)
+
 ## Tech Stack
 
 **Frontend:** React 19, TypeScript, Vite, React Bootstrap, Socket.io Client
